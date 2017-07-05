@@ -10,7 +10,7 @@ Proc sql;
 	values (&program, &programversion);
 
 	Create table Final.Versions as
-	Select 		a.BatchVersion, case when b.program="Industry Summary.sas" then "IndSum" else a.SASProgramTypeID end as SASProgramTypeID, b.*
+	Select 		a.*, b.* 
 	from 		LPAll.BatchVersion a, LPAll.ProgramVersions b;
 quit;
 
@@ -19,7 +19,7 @@ quit;
 libname SQL ODBC DSN=IPSTestDB schema=sas;
 data _null_;
 	set sql.BaseYear;
-	call symput("BaseYearNo", input(substr(BaseYearID,5,1),1.));
+	call symput("BaseYearID", BaseYearID);
 	call symput("BasePeriod", BaseCensusPeriodID);
 run;
 
@@ -189,8 +189,7 @@ Proc sql;
 					end as DataSeriesID
 	from			work.ApplyRatios a
 	inner join		work.ApplyRatios b
-	on				(a.IndustryID=b.IndustryID) and (a.DataSeriesID=b.DataSeriesID) and
-					(b.CensusPeriodID=&baseperiod) and (b.YearNo=&BaseYearNo)
+	on				(a.IndustryID=b.IndustryID) and (a.DataSeriesID=b.DataSeriesID) and (b.yearid="&BaseYearID")
 	where			a.DataSeriesID ne "T36"
 	order by		IndustryID, DataSeriesID, YearID;
 quit;
@@ -202,8 +201,7 @@ Proc sql;
 	Select			a.IndustryID, a.YearID, a.CensusPeriodID, a.YearNo, a.Value/b.Value*100 as Value
 	from			work.ApplyRatios a
 	inner join		work.ApplyRatios b
-	on				(a.IndustryID=b.IndustryID) and (a.DataSeriesID=b.DataSeriesID) and
-					(b.CensusPeriodID=&baseperiod) and (b.YearNo=&BaseYearNo)
+	on				(a.IndustryID=b.IndustryID) and (a.DataSeriesID=b.DataSeriesID) and (b.yearid="&BaseYearID")
 	where			a.DataSeriesID="T36"
 	order by		IndustryID, YearID;
 quit;
